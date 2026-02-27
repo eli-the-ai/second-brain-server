@@ -1,0 +1,39 @@
+<%- include('partials/header') %>
+
+<h1>Search</h1>
+
+<form class="search-form" method="get" action="/search">
+  <input type="text" name="q" placeholder="Search knowledge base..." value="<%= query %>" autofocus>
+  <button type="submit">Search</button>
+</form>
+
+<% if (query) { %>
+  <p class="search-info"><%= results.length %> result(s) for "<%= query %>"</p>
+<% } %>
+
+<% if (results.length > 0) { %>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Domain</th>
+        <th>Status</th>
+        <th>Relevance</th>
+        <th>Created</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% results.forEach(function(item) { %>
+        <tr>
+          <td><a href="/items/<%= item.id %>"><%= item.title %></a></td>
+          <td><span class="badge domain-<%= item.domain %>"><%= item.domain %></span></td>
+          <td><span class="badge status-<%= item.status %>"><%= item.status %></span></td>
+          <td><%= (item.rank * 100).toFixed(1) %>%</td>
+          <td><%= new Date(item.created_at).toLocaleDateString() %></td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+<% } %>
+
+<%- include('partials/footer') %>

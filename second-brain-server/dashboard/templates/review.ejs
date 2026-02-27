@@ -1,0 +1,46 @@
+<%- include('partials/header') %>
+
+<h1>Review Queue <span class="count">(<%= items.length %>)</span></h1>
+
+<div class="stats-grid">
+  <% stats.forEach(function(s) { %>
+    <div class="stat-card">
+      <div class="stat-number"><%= s.count %></div>
+      <div class="stat-label"><%= s.classification %></div>
+    </div>
+  <% }); %>
+</div>
+
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>Text Preview</th>
+      <th>Classification</th>
+      <th>Confidence</th>
+      <th>Source</th>
+      <th>By</th>
+      <th>Created</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% items.forEach(function(item) { %>
+      <tr>
+        <td class="text-preview"><%= item.original_text.substring(0, 100) %><%= item.original_text.length > 100 ? '...' : '' %></td>
+        <td><span class="badge classification-<%= item.classification %>"><%= item.classification %></span></td>
+        <td><%= item.confidence !== null ? (item.confidence * 100).toFixed(0) + '%' : '—' %></td>
+        <td><%= item.source_type || '—' %></td>
+        <td><%= item.created_by || '—' %></td>
+        <td><%= new Date(item.created_at).toLocaleDateString() %></td>
+      </tr>
+    <% }); %>
+    <% if (items.length === 0) { %>
+      <tr><td colspan="6" class="empty">No items need review. All clear!</td></tr>
+    <% } %>
+  </tbody>
+</table>
+
+<p class="help-text">
+  Use the MCP tools <code>fix_classification</code> or <code>dismiss_review</code> to process review items.
+</p>
+
+<%- include('partials/footer') %>

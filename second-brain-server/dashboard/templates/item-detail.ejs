@@ -1,0 +1,60 @@
+<%- include('partials/header') %>
+
+<div class="breadcrumb">
+  <a href="/items">Items</a> &rsaquo; <%= item.domain %>
+</div>
+
+<h1><%= item.title %></h1>
+
+<div class="item-meta">
+  <span class="badge domain-<%= item.domain %>"><%= item.domain %></span>
+  <span class="badge status-<%= item.status %>"><%= item.status %></span>
+  <% if (item.created_by) { %>
+    <span class="meta-item">By: <%= item.created_by %></span>
+  <% } %>
+  <span class="meta-item">Source: <%= item.source_type %></span>
+  <span class="meta-item">Created: <%= new Date(item.created_at).toLocaleString() %></span>
+  <% if (item.updated_at && item.updated_at !== item.created_at) { %>
+    <span class="meta-item">Updated: <%= new Date(item.updated_at).toLocaleString() %></span>
+  <% } %>
+</div>
+
+<% if (item.tags && item.tags.length > 0) { %>
+  <div class="tags">
+    <% item.tags.forEach(function(tag) { %>
+      <span class="tag"><%= tag %></span>
+    <% }); %>
+  </div>
+<% } %>
+
+<div class="item-body">
+  <pre><%= item.body %></pre>
+</div>
+
+<% if (item.metadata && Object.keys(item.metadata).length > 0) { %>
+  <h2>Metadata</h2>
+  <pre class="metadata"><%= JSON.stringify(item.metadata, null, 2) %></pre>
+<% } %>
+
+<% if (relations.length > 0) { %>
+  <h2>Related Items</h2>
+  <ul class="relations">
+    <% relations.forEach(function(rel) { %>
+      <li>
+        <span class="relation-type"><%= rel.relation %></span>
+        <a href="/items/<%= rel.from_id === item.id ? rel.to_id : rel.from_id %>">
+          <%= rel.related_title %>
+        </a>
+        <span class="badge domain-<%= rel.related_domain %>"><%= rel.related_domain %></span>
+      </li>
+    <% }); %>
+  </ul>
+<% } %>
+
+<% if (item.source_ref) { %>
+  <div class="source-ref">
+    Source ref: <code><%= item.source_ref %></code>
+  </div>
+<% } %>
+
+<%- include('partials/footer') %>

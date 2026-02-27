@@ -1,0 +1,59 @@
+<%- include('partials/header') %>
+
+<h1>Knowledge Items <span class="count">(<%= total %>)</span></h1>
+
+<form class="filter-bar" method="get" action="/items">
+  <select name="domain">
+    <option value="">All Domains</option>
+    <% domains.forEach(function(d) { %>
+      <option value="<%= d %>" <%= filters.domain === d ? 'selected' : '' %>><%= d.replace('_', ' ') %></option>
+    <% }); %>
+  </select>
+  <select name="status">
+    <option value="">All Statuses</option>
+    <% statuses.forEach(function(s) { %>
+      <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s %></option>
+    <% }); %>
+  </select>
+  <input type="text" name="q" placeholder="Search..." value="<%= filters.q || '' %>">
+  <button type="submit">Filter</button>
+</form>
+
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Domain</th>
+      <th>Status</th>
+      <th>Source</th>
+      <th>By</th>
+      <th>Created</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% items.forEach(function(item) { %>
+      <tr>
+        <td><a href="/items/<%= item.id %>"><%= item.title %></a></td>
+        <td><span class="badge domain-<%= item.domain %>"><%= item.domain %></span></td>
+        <td><span class="badge status-<%= item.status %>"><%= item.status %></span></td>
+        <td><%= item.source_type %></td>
+        <td><%= item.created_by || '—' %></td>
+        <td><%= new Date(item.created_at).toLocaleDateString() %></td>
+      </tr>
+    <% }); %>
+    <% if (items.length === 0) { %>
+      <tr><td colspan="6" class="empty">No items found.</td></tr>
+    <% } %>
+  </tbody>
+</table>
+
+<% if (totalPages > 1) { %>
+  <div class="pagination">
+    <% for (let p = 1; p <= totalPages; p++) { %>
+      <a href="/items?page=<%= p %>&domain=<%= filters.domain || '' %>&status=<%= filters.status || '' %>&q=<%= filters.q || '' %>"
+         class="page-link <%= p === currentPage ? 'active' : '' %>"><%= p %></a>
+    <% } %>
+  </div>
+<% } %>
+
+<%- include('partials/footer') %>
