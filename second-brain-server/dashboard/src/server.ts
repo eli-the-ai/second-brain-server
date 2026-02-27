@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import pg from "pg";
 import { apiRouter } from "./routes/api.js";
 import { viewsRouter } from "./routes/views.js";
+import { publicRouter } from "./routes/public.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -63,6 +64,7 @@ async function main(): Promise<void> {
 
   // Routes
   app.use("/api", apiRouter);
+  app.use("/content", publicRouter);  // Public-facing CMS content (no auth required)
   app.use("/", viewsRouter);
 
   app.listen(port, () => {

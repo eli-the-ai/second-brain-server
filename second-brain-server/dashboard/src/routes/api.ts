@@ -181,3 +181,67 @@ apiRouter.get("/stats", async (req, res) => {
     res.status(500).json({ error: err instanceof Error ? err.message : "Unknown error" });
   }
 });
+
+// GET /api/cms/published — published content (public API)
+apiRouter.get("/cms/published", async (req, res) => {
+  try {
+    const db = getDb(req);
+    const { domain, limit = "20", offset = "0" } = req.query;
+
+    const conditions = ["publish_status = 'published'", "published_at <= now()"];
+    const params: unknown[] = [];
+    let idx = 1;
+
+    if (domain && typeof domain === "string") {
+      conditions.push(`domain = $${idx++}`);
+      params.push(domain);
+    }
+
+    const where = `WHERE ${conditions.join(" AND ")}`;
+    const lim = Math.min(parseInt(limit as string, 10) || 20, 100);
+    const off = parseInt(offset as string, 10) || 0;
+
+    const { rows } = await db.query(
+      `SELECT id, domain, title, slug, excerpt, tags, published_at, published_by
+       FROM knowledge_items ${where}
+       ORDER BY published_at DESC
+       LIMIT $${idx++} OFFSET $${idx++}`,
+      [...params, lim, off]
+    );
+
+    const { rows: countRows } = await db.query(
+      `SELECT COUNT(*) as total FROM knowledge_items ${where}`,
+      params
+    );
+
+    res.json({
+      articles: rows,
+      total: parseInt(countRows[0].total, 10),
+      limit: lim,
+      offset: off,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : "Unknown error" });
+  }
+});
+
+// GET /api/cms/published/:slug — single published article (public API)
+apiRouter.get("/cms/published/:slug", async (req, res) => {
+  try {
+    const db = getDb(req);
+    const { rows } = await db.query(
+      `SELECT id, domain, title, slug, body, excerpt, tags, metadata, published_at, published_by
+       FROM knowledge_items
+       WHERE slug = $1 AND publish_status = 'published' AND published_at <= now()`,
+      [req.params.slug]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Article not found" });
+    }
+
+    return res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : "Unknown error" });
+  }
+});

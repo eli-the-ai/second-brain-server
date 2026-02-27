@@ -7,6 +7,8 @@ export type Domain =
 
 export type ItemStatus = "active" | "on_hold" | "completed" | "archived";
 
+export type PublishStatus = "draft" | "in_review" | "published" | "unpublished";
+
 export type SourceType =
   | "manual"
   | "outlook_email"
@@ -29,6 +31,13 @@ export interface KnowledgeItem {
   created_by: string | null;
   created_at: Date;
   updated_at: Date;
+  // CMS fields
+  publish_status: PublishStatus;
+  slug: string | null;
+  excerpt: string | null;
+  publish_at: Date | null;
+  published_at: Date | null;
+  published_by: string | null;
 }
 
 export interface InboxLogEntry {

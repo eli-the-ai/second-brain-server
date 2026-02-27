@@ -1,4 +1,4 @@
-import type { Domain, ItemStatus } from "./types.js";
+import type { Domain, ItemStatus, PublishStatus } from "./types.js";
 
 export const DOMAINS: Domain[] = [
   "projects",
@@ -13,6 +13,13 @@ export const ITEM_STATUSES: ItemStatus[] = [
   "on_hold",
   "completed",
   "archived",
+];
+
+export const PUBLISH_STATUSES: PublishStatus[] = [
+  "draft",
+  "in_review",
+  "published",
+  "unpublished",
 ];
 
 export const CONFIDENCE_THRESHOLD = 0.6;

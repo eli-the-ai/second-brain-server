@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> — Second Brain</title>
+  <link rel="stylesheet" href="/static/css/public.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/content" class="site-name">Second Brain</a>
+      <nav class="site-nav">
+        <a href="/content">All</a>
+        <% domains.forEach(function(d) { %>
+          <a href="/content?domain=<%= d %>" class="<%= domain === d ? 'active' : '' %>"><%= d.replace('_', ' ') %></a>
+        <% }); %>
+      </nav>
+    </div>
+  </header>
+
+  <main class="content-area">
+    <% if (domain) { %>
+      <h1 class="page-title"><%= domain.replace('_', ' ') %></h1>
+    <% } else { %>
+      <h1 class="page-title">Published Content</h1>
+    <% } %>
+
+    <% if (articles.length === 0) { %>
+      <p class="empty-state">No published content yet.</p>
+    <% } %>
+
+    <div class="article-list">
+      <% articles.forEach(function(article) { %>
+        <article class="article-card">
+          <div class="article-meta">
+            <span class="article-domain"><%= article.domain.replace('_', ' ') %></span>
+            <time><%= new Date(article.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></time>
+          </div>
+          <h2><a href="/content/<%= article.slug %>"><%= article.title %></a></h2>
+          <% if (article.excerpt) { %>
+            <p class="article-excerpt"><%= article.excerpt %></p>
+          <% } %>
+          <% if (article.tags && article.tags.length > 0) { %>
+            <div class="article-tags">
+              <% article.tags.forEach(function(tag) { %>
+                <span class="tag"><%= tag %></span>
+              <% }); %>
+            </div>
+          <% } %>
+        </article>
+      <% }); %>
+    </div>
+
+    <% if (totalPages > 1) { %>
+      <div class="pagination">
+        <% for (let p = 1; p <= totalPages; p++) { %>
+          <a href="/content?page=<%= p %><%= domain ? '&domain=' + domain : '' %>"
+             class="page-link <%= p === currentPage ? 'active' : '' %>"><%= p %></a>
+        <% } %>
+      </div>
+    <% } %>
+  </main>
+
+  <footer class="site-footer">
+    <p>ORU Web Team &middot; Second Brain</p>
+  </footer>
+</body>
+</html>

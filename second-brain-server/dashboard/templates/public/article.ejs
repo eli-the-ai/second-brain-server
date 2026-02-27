@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= article.title %> — Second Brain</title>
+  <meta name="description" content="<%= article.excerpt || '' %>">
+  <link rel="stylesheet" href="/static/css/public.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/content" class="site-name">Second Brain</a>
+      <nav class="site-nav">
+        <a href="/content">All</a>
+        <a href="/content?domain=<%= article.domain %>"><%= article.domain.replace('_', ' ') %></a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="content-area">
+    <article class="article-full">
+      <div class="article-meta">
+        <span class="article-domain"><%= article.domain.replace('_', ' ') %></span>
+        <time><%= new Date(article.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></time>
+        <% if (article.published_by) { %>
+          <span class="article-author">by <%= article.published_by %></span>
+        <% } %>
+      </div>
+
+      <h1><%= article.title %></h1>
+
+      <% if (article.tags && article.tags.length > 0) { %>
+        <div class="article-tags">
+          <% article.tags.forEach(function(tag) { %>
+            <span class="tag"><%= tag %></span>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <div class="article-body">
+        <pre><%= article.body %></pre>
+      </div>
+    </article>
+
+    <% if (related.length > 0) { %>
+      <section class="related-content">
+        <h2>Related</h2>
+        <div class="related-list">
+          <% related.forEach(function(item) { %>
+            <a href="/content/<%= item.slug %>" class="related-card">
+              <span class="article-domain"><%= item.domain.replace('_', ' ') %></span>
+              <h3><%= item.title %></h3>
+              <% if (item.excerpt) { %>
+                <p><%= item.excerpt %></p>
+              <% } %>
+            </a>
+          <% }); %>
+        </div>
+      </section>
+    <% } %>
+
+    <div class="back-link">
+      <a href="/content">&larr; All content</a>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>ORU Web Team &middot; Second Brain</p>
+  </footer>
+</body>
+</html>
