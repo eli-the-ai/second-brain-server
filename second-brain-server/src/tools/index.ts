@@ -8,6 +8,7 @@ import { registerReviewTools } from "./review.js";
 import { registerSecurityTools } from "./security.js";
 import { registerAdminTools } from "./admin.js";
 import { registerIngestTools } from "./ingest.js";
+import { registerDigestTools } from "./digest.js";
 
 export function registerAllTools(
   server: McpServer,
@@ -21,4 +22,5 @@ export function registerAllTools(
   registerSecurityTools(server, db);
   registerAdminTools(server, db, ollama);
   registerIngestTools(server, db, ollama);
+  registerDigestTools(server, db, ollama);
 }
