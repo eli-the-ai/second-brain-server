@@ -12,7 +12,8 @@ async function ingestItem(
   text: string,
   title: string,
   sourceType: string,
-  sourceRef: string | null
+  sourceRef: string | null,
+  createdBy: string | null
 ): Promise<{
   status: string;
   domain?: string;
@@ -40,9 +41,9 @@ async function ingestItem(
       [text.substring(0, 500), "pii_detected", JSON.stringify({ findings: scan.pii_findings }), "quarantined"]
     );
     await db.query(
-      `INSERT INTO inbox_log (original_text, classification, confidence, source_type, source_ref)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [text, "security_hold", 0, sourceType, sourceRef]
+      `INSERT INTO inbox_log (original_text, classification, confidence, source_type, source_ref, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [text, "security_hold", 0, sourceType, sourceRef, createdBy]
     );
     return { status: "quarantined", reason: "PII detected" };
   }
@@ -70,14 +71,15 @@ async function ingestItem(
 
   if (!review) {
     const { rows } = await db.query(
-      `INSERT INTO knowledge_items (domain, title, body, source_type, source_ref, metadata, embedding)
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+      `INSERT INTO knowledge_items (domain, title, body, source_type, source_ref, created_by, metadata, embedding)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
       [
         classification.domain,
         title.substring(0, 200),
         cleanText,
         sourceType,
         sourceRef,
+        createdBy,
         JSON.stringify(classification.extracted),
         embedding ? JSON.stringify(embedding) : null,
       ]
@@ -86,9 +88,9 @@ async function ingestItem(
   }
 
   await db.query(
-    `INSERT INTO inbox_log (original_text, classification, confidence, stored_item_id, source_type, source_ref)
-     VALUES ($1, $2, $3, $4, $5, $6)`,
-    [text, review ? "needs_review" : classification.domain, classification.confidence, storedItemId, sourceType, sourceRef]
+    `INSERT INTO inbox_log (original_text, classification, confidence, stored_item_id, source_type, source_ref, created_by)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    [text, review ? "needs_review" : classification.domain, classification.confidence, storedItemId, sourceType, sourceRef, createdBy]
   );
 
   return {
@@ -102,7 +104,8 @@ async function ingestItem(
 export function registerIngestTools(
   server: McpServer,
   db: DbPool,
-  ollama: OllamaClient
+  ollama: OllamaClient,
+  defaultUser: string | null
 ): void {
   server.tool(
     "ingest_email_summary",
@@ -117,7 +120,7 @@ export function registerIngestTools(
     async (args) => {
       try {
         const text = `From: ${args.from}\nDate: ${args.date}\nSubject: ${args.subject}\n\n${args.body}`;
-        const result = await ingestItem(db, ollama, text, args.subject, "outlook_email", args.message_id ?? null);
+        const result = await ingestItem(db, ollama, text, args.subject, "outlook_email", args.message_id ?? null, defaultUser);
         return jsonResult(result);
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err));
@@ -139,7 +142,7 @@ export function registerIngestTools(
       try {
         const text = `[${args.item_type.toUpperCase()}] ${args.repo}\n${args.title}\n\n${args.body}`;
         const sourceType = args.item_type === "issue" ? "github_issue" : "github_pr";
-        const result = await ingestItem(db, ollama, text, args.title, sourceType, args.url);
+        const result = await ingestItem(db, ollama, text, args.title, sourceType, args.url, defaultUser);
         return jsonResult(result);
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err));
@@ -162,7 +165,7 @@ export function registerIngestTools(
         const attendeeList = args.attendees?.join(", ") ?? "none";
         const text = `Event: ${args.summary}\nWhen: ${args.start} to ${args.end}\nAttendees: ${attendeeList}\n\n${args.description ?? ""}`;
         const sourceRef = `cal:${args.summary}:${args.start}`;
-        const result = await ingestItem(db, ollama, text, args.summary, "calendar_event", sourceRef);
+        const result = await ingestItem(db, ollama, text, args.summary, "calendar_event", sourceRef, defaultUser);
         return jsonResult(result);
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err));
@@ -183,7 +186,7 @@ export function registerIngestTools(
     async (args) => {
       try {
         const text = `[${args.feed_name}] ${args.title}\nPublished: ${args.published ?? "unknown"}\n\n${args.body}`;
-        const result = await ingestItem(db, ollama, text, args.title, "rss_feed", args.url);
+        const result = await ingestItem(db, ollama, text, args.title, "rss_feed", args.url, defaultUser);
         return jsonResult(result);
       } catch (err) {
         return errorResult(err instanceof Error ? err.message : String(err));

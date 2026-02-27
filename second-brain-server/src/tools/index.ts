@@ -13,14 +13,15 @@ import { registerDigestTools } from "./digest.js";
 export function registerAllTools(
   server: McpServer,
   db: DbPool,
-  ollama: OllamaClient
+  ollama: OllamaClient,
+  defaultUser: string | null
 ): void {
-  registerCaptureTools(server, db, ollama);
+  registerCaptureTools(server, db, ollama, defaultUser);
   registerKnowledgeTools(server, db, ollama);
   registerSearchTools(server, db, ollama);
   registerReviewTools(server, db, ollama);
   registerSecurityTools(server, db);
   registerAdminTools(server, db, ollama);
-  registerIngestTools(server, db, ollama);
+  registerIngestTools(server, db, ollama, defaultUser);
   registerDigestTools(server, db, ollama);
 }

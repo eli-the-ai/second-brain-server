@@ -11,7 +11,8 @@ import type { Domain, SourceType } from "../shared/types.js";
 export function registerCaptureTools(
   server: McpServer,
   db: DbPool,
-  ollama: OllamaClient
+  ollama: OllamaClient,
+  defaultUser: string | null
 ): void {
   server.tool(
     "capture_thought",
@@ -60,7 +61,7 @@ export function registerCaptureTools(
               0,
               sourceType,
               args.source_ref ?? null,
-              args.created_by ?? null,
+              args.created_by ?? defaultUser,
             ]
           );
 
@@ -127,7 +128,7 @@ export function registerCaptureTools(
               cleanText,
               sourceType,
               args.source_ref ?? null,
-              args.created_by ?? null,
+              args.created_by ?? defaultUser,
               JSON.stringify(classification.extracted),
               [],
               embedding ? JSON.stringify(embedding) : null,
@@ -147,7 +148,7 @@ export function registerCaptureTools(
             storedItemId,
             sourceType,
             args.source_ref ?? null,
-            args.created_by ?? null,
+            args.created_by ?? defaultUser,
           ]
         );
 
@@ -222,7 +223,7 @@ export function registerCaptureTools(
             cleanText,
             sourceType,
             args.source_ref ?? null,
-            args.created_by ?? null,
+            args.created_by ?? defaultUser,
             args.tags ?? [],
             embedding ? JSON.stringify(embedding) : null,
           ]
@@ -232,7 +233,7 @@ export function registerCaptureTools(
         await db.query(
           `INSERT INTO inbox_log (original_text, classification, confidence, stored_item_id, source_type, source_ref, created_by)
            VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-          [args.text, domain, 1.0, rows[0].id, sourceType, args.source_ref ?? null, args.created_by ?? null]
+          [args.text, domain, 1.0, rows[0].id, sourceType, args.source_ref ?? null, args.created_by ?? defaultUser]
         );
 
         return jsonResult({
@@ -308,7 +309,7 @@ export function registerCaptureTools(
                 cleanText,
                 sourceType,
                 item.source_ref ?? null,
-                args.created_by ?? null,
+                args.created_by ?? defaultUser,
                 JSON.stringify(classification.extracted),
                 embedding ? JSON.stringify(embedding) : null,
               ]
@@ -326,7 +327,7 @@ export function registerCaptureTools(
               storedItemId,
               sourceType,
               item.source_ref ?? null,
-              args.created_by ?? null,
+              args.created_by ?? defaultUser,
             ]
           );
 

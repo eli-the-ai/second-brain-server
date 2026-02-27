@@ -38,7 +38,12 @@ async function main(): Promise<void> {
     }
   );
 
-  registerAllTools(server, db, ollama);
+  const brainUser = process.env.BRAIN_USER || null;
+  if (brainUser) {
+    console.error(`Authenticated as: ${brainUser}`);
+  }
+
+  registerAllTools(server, db, ollama, brainUser);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
